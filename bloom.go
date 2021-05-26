@@ -26,8 +26,9 @@ func New(m uint64, k uint32) *BloomFilter {
 	}
 }
 
-func (bf *BloomFilter) Add(data string) {
+func (bf *BloomFilter) Add(data string) error {
 	bf.setBits(data)
+	return nil
 }
 
 func (bf *BloomFilter) setBits(data string) {
