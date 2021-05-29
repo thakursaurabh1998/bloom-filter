@@ -48,3 +48,20 @@ func TestBloomFilterAdd(t *testing.T) {
 		t.Error("Error in adding word to bloom filter")
 	}
 }
+
+func TestBasicBloomFilterFunctioning(t *testing.T) {
+	expectedElemsSize := uint64(10000)
+	falsePositiveRate := 0.0001
+	f := New(expectedElemsSize, falsePositiveRate)
+
+	word1 := "test"
+	f.Add(word1)
+
+	if !f.Lookup(word1) {
+		t.Errorf("Incorrect lookup, %s should be present in the bloom filter", word1)
+	}
+
+	if f.Lookup("other_word") {
+		t.Errorf("Incorrect lookup, the word should not be their in the filter")
+	}
+}

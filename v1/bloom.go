@@ -17,6 +17,7 @@ type (
 
 	BloomFilter interface {
 		Add(string) error
+		Lookup(string) bool
 	}
 )
 
@@ -35,15 +36,34 @@ func New(n uint64, p float64) BloomFilter {
 	}
 }
 
+// Add adds the data to the bloom filter
 func (bf *bloomFilter) Add(data string) error {
 	bf.setBits(data)
 	return nil
 }
 
+// Lookup returns a boolean value
+// if returned true it signifies that data **MIGHT** be present
+// but a false return signifies that data is **GUARANTEED** not present
+func (bf *bloomFilter) Lookup(data string) bool {
+	for _, seed := range *bf.seeds {
+		index := bf.findIndexAccToSeed(data, seed)
+		if (*bf.b)[index] == 0 {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (bf *bloomFilter) findIndexAccToSeed(data string, seed uint32) uint64 {
+	h1, _ := calculateHash([]byte(data), seed)
+	return h1 % bf.m
+}
+
 func (bf *bloomFilter) setBits(data string) {
-	for i := uint64(0); i < bf.k; i++ {
-		h1, _ := calculateHash([]byte(data), (*bf.seeds)[i])
-		index := h1 % bf.m
+	for _, seed := range *bf.seeds {
+		index := bf.findIndexAccToSeed(data, seed)
 		(*bf.b)[index] = 1
 	}
 }
