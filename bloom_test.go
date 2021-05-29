@@ -5,16 +5,23 @@ import (
 	"testing"
 )
 
-func TestBasic(t *testing.T) {
-	maxSize := uint64(10000)
-	hashFunctionNum := uint32(4)
-	f := New(maxSize, hashFunctionNum)
-	if f.m != maxSize {
-		t.Error("Max size doesn't match the set value")
+func TestEstimateFilterMetrics(t *testing.T) {
+	maxElems := float64(100000)
+	falsePositiveRate := 0.0000001
+	m, k := estimateFilterMetrics(maxElems, falsePositiveRate)
+
+	// example and test metrics taken directly
+	// from the reference website default values
+	// https://hur.st/bloomfilter/?n=100000&p=1.0E-7
+	expectedElemsSize := uint64(3354771)
+	expectedHashFunctions := uint64(23)
+
+	if m != expectedElemsSize {
+		t.Error("Max size doesn't match the expected calculated value")
 	}
 
-	if f.k != hashFunctionNum {
-		t.Error("Count of hash functions to run doesn't match the set value")
+	if k != uint64(expectedHashFunctions) {
+		t.Error("Count of hash functions doesn't match the expected calculated value")
 	}
 }
 
@@ -31,9 +38,9 @@ func TestHashCalculation(t *testing.T) {
 }
 
 func TestBloomFilterAdd(t *testing.T) {
-	maxSize := uint64(10000)
-	hashFunctionNum := uint32(4)
-	f := New(maxSize, hashFunctionNum)
+	expectedElemsSize := uint64(10000)
+	falsePositiveRate := 0.0001
+	f := New(expectedElemsSize, falsePositiveRate)
 
 	err := f.Add("test")
 
