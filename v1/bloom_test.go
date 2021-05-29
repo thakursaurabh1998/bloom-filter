@@ -1,4 +1,4 @@
-package bloom
+package bloom_v1
 
 import (
 	"math/rand"

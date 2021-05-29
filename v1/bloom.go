@@ -1,4 +1,4 @@
-package bloom
+package bloom_v1
 
 import (
 	"math"
@@ -8,22 +8,26 @@ import (
 )
 
 type (
-	BloomFilter struct {
+	bloomFilter struct {
 		m     uint64    // maximum size
 		k     uint64    // number of hash functions
 		b     *[]uint8  // bitarray
 		seeds *[]uint32 // seeds array to create multiple hashes
+	}
+
+	BloomFilter interface {
+		Add(string) error
 	}
 )
 
 // New returns a BloomFilter instance
 // n = number of instance
 // p = expected probability of false positives
-func New(n uint64, p float64) *BloomFilter {
+func New(n uint64, p float64) BloomFilter {
 	m, k := estimateFilterMetrics(float64(n), p)
 	b := make([]uint8, m)
 	seeds := createRandomSeeds(k)
-	return &BloomFilter{
+	return &bloomFilter{
 		m:     m,
 		k:     k,
 		b:     &b,
@@ -31,12 +35,12 @@ func New(n uint64, p float64) *BloomFilter {
 	}
 }
 
-func (bf *BloomFilter) Add(data string) error {
+func (bf *bloomFilter) Add(data string) error {
 	bf.setBits(data)
 	return nil
 }
 
-func (bf *BloomFilter) setBits(data string) {
+func (bf *bloomFilter) setBits(data string) {
 	for i := uint64(0); i < bf.k; i++ {
 		h1, _ := calculateHash([]byte(data), (*bf.seeds)[i])
 		index := h1 % bf.m
